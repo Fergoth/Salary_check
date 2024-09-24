@@ -11,6 +11,7 @@
 ```
 pip install -r requirements.txt
 ```
+Создать .env файл с переменной SUPERJOB_API_KEY={}
 - Запустите скрипт:
 
 ```
