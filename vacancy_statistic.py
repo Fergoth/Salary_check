@@ -81,9 +81,14 @@ def get_all_vacancies_sj(lang, token):
 
 
 def get_stats_vacancies_sj(languages, token):
-    stat_all_languages_sj = {}
+    stat_all_languages_sj = {
+        lang: {
+            "vacancies_found": 0,
+            "vacancies_processed": 0,
+            "average_salary": 0
+        } for lang in languages
+    }
     for lang in languages:
-        stat_all_languages_sj[lang] = {}
         vacancies = get_sj_vacancies_by_language(lang, token)
         stat_all_languages_sj[lang]["vacancies_found"] = vacancies["total"]
         proceded_vacancies = []
@@ -97,15 +102,18 @@ def get_stats_vacancies_sj(languages, token):
             stat_all_languages_sj[lang]["average_salary"] = sum(
                 proceded_vacancies
             ) // len(proceded_vacancies)
-        else:
-            stat_all_languages_sj[lang]["average_salary"] = 0
     return stat_all_languages_sj
 
 
 def get_stats_vacancies_hh(languages):
-    stat_all_languages_hh = {}
+    stat_all_languages_hh = {
+        lang: {
+            "vacancies_found": 0,
+            "vacancies_processed": 0,
+            "average_salary": 0
+        } for lang in languages
+    }
     for lang in languages:
-        stat_all_languages_hh[lang] = {}
         vacancies = get_hh_vacancies_by_language(lang)
         stat_all_languages_hh[lang]["vacancies_found"] = vacancies["found"]
         proceded_vacancies = []
@@ -118,8 +126,6 @@ def get_stats_vacancies_hh(languages):
             stat_all_languages_hh[lang]["average_salary"] = sum(
                 proceded_vacancies
             ) // len(proceded_vacancies)
-        else:
-            stat_all_languages_hh[lang]["average_salary"] = 0
     return stat_all_languages_hh
 
 
