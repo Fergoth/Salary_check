@@ -7,11 +7,13 @@ from terminaltables import SingleTable
 
 def get_hh_vacancies_by_language(language, page=0):
     URL = "https://api.hh.ru/vacancies"
+    programmer_id = 96
+    moskow_hh_id = 1
     params = {
-        "professional_role": 96,
+        "professional_role": programmer_id,
         "page": page,
         "per_page": 100,
-        "area": 1,
+        "area": moskow_hh_id,
         "period": 30,
         "text": language,
         "only_with_salary": True,
@@ -60,7 +62,12 @@ def get_all_vacancies_hh(lang):
 def get_sj_vacancies_by_language(language: str, sj_token: str, page: int = 0):
     url = "https://api.superjob.ru/2.0/vacancies/"
     headers = {"X-Api-App-Id": sj_token}
-    data = {"keyword": f"{language}", "town": 4, "page": page}
+    moskow_sj_id = 4
+    data = {
+        "keyword": f"{language}",
+        "town": moskow_sj_id,
+        "page": page
+    }
     response = requests.get(url, headers=headers, params=data)
     response.raise_for_status()
     return response.json()
