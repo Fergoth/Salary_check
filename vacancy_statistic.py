@@ -45,30 +45,25 @@ def predict_rub_salary_hh(vacancy):
 
 
 def fetch_vacancies_hh(lang):
+    all_vacancies = []
     for page in count():
         vacancies = get_hh_vacancies_by_language(lang, page)
         if page > vacancies["pages"]:
             break
-        yield vacancies
-
-
-def get_all_vacancies_hh(lang):
-    ans = []
-    for vacancies in fetch_vacancies_hh(lang):
-        ans += vacancies['items']
-    return ans, vacancies['found']
+        all_vacancies += vacancies['items']
+    return all_vacancies, vacancies['found']
 
 
 def get_sj_vacancies_by_language(language: str, sj_token: str, page: int = 0):
     url = "https://api.superjob.ru/2.0/vacancies/"
     headers = {"X-Api-App-Id": sj_token}
     moskow_sj_id = 4
-    data = {
+    params = {
         "keyword": f"{language}",
         "town": moskow_sj_id,
         "page": page
     }
-    response = requests.get(url, headers=headers, params=data)
+    response = requests.get(url, headers=headers, params=params)
     response.raise_for_status()
     return response.json()
 
@@ -101,9 +96,9 @@ def get_stats_vacancies_sj(languages, token):
             vacancy_page = vacancy_response["objects"]
             stat_all_languages_sj[lang]["vacancies_found"] = vacancy_response["total"]
             for vacancy in vacancy_page:
-                predict = predict_rub_salary_sj(vacancy)
-                if predict:
-                    proceded_vacancies.append(predict)
+                predicted_salary = predict_rub_salary_sj(vacancy)
+                if predicted_salary:
+                    proceded_vacancies.append(predicted_salary)
         stat_all_languages_sj[lang]["vacancies_processed"] = len(proceded_vacancies)
         if len(proceded_vacancies):
             stat_all_languages_sj[lang]["average_salary"] = sum(
@@ -121,15 +116,13 @@ def get_stats_vacancies_hh(languages):
         } for lang in languages
     }
     for lang in languages:
-        # vacancies = get_hh_vacancies_by_language(lang)
-        # stat_all_languages_hh[lang]["vacancies_found"] = vacancies["found"]
         proceded_vacancies = []
-        vacancies, vacancies_count = get_all_vacancies_hh(lang)
+        vacancies, vacancies_count = fetch_vacancies_hh(lang)
         stat_all_languages_hh[lang]["vacancies_found"] = vacancies_count
         for vacancy in vacancies:
-            predict = predict_rub_salary_hh(vacancy)
-            if predict:
-                proceded_vacancies.append(predict)
+            predicted_salary = predict_rub_salary_hh(vacancy)
+            if predicted_salary:
+                proceded_vacancies.append(predicted_salary)
         stat_all_languages_hh[lang]["vacancies_processed"] = len(proceded_vacancies)
         if len(proceded_vacancies):
             stat_all_languages_hh[lang]["average_salary"] = sum(
@@ -139,7 +132,7 @@ def get_stats_vacancies_hh(languages):
 
 
 def print_table(stat, title):
-    TABLE_DATA = [
+    table = [
         [
             lang,
             stat[lang]["vacancies_found"],
@@ -148,15 +141,15 @@ def print_table(stat, title):
         ]
         for lang in stat.keys()
     ]
-    TABLE_DATA = [
+    table = [
         [
             "Язык программирования",
             "Вакансий найдено",
             "Вакансий Обработано",
             "Средняя зп",
         ],
-    ] + TABLE_DATA
-    table_instance = SingleTable(TABLE_DATA, title)
+    ] + table
+    table_instance = SingleTable(table, title)
     table_instance.justify_columns[2] = "right"
     print(table_instance.table)
 
