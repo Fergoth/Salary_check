@@ -47,14 +47,14 @@ def fetch_vacancies_hh(lang):
         vacancies = get_hh_vacancies_by_language(lang, page)
         if page > vacancies["pages"]:
             break
-        yield vacancies["items"]
+        yield vacancies
 
 
 def get_all_vacancies_hh(lang):
     ans = []
     for vacancies in fetch_vacancies_hh(lang):
-        ans += vacancies
-    return ans
+        ans += vacancies['items']
+    return ans, vacancies['found']
 
 
 def get_sj_vacancies_by_language(language: str, sj_token: str, page: int = 0):
@@ -75,7 +75,7 @@ def predict_rub_salary_sj(vacancy):
 def get_all_vacancies_sj(lang, token):
     for page in count():
         vacancy = get_sj_vacancies_by_language(lang, token, page)
-        yield vacancy["objects"]
+        yield vacancy
         if not vacancy["more"]:
             break
 
@@ -89,10 +89,10 @@ def get_stats_vacancies_sj(languages, token):
         } for lang in languages
     }
     for lang in languages:
-        vacancies = get_sj_vacancies_by_language(lang, token)
-        stat_all_languages_sj[lang]["vacancies_found"] = vacancies["total"]
         proceded_vacancies = []
-        for vacancy_page in get_all_vacancies_sj(lang, token):
+        for vacancy_response in get_all_vacancies_sj(lang, token):
+            vacancy_page = vacancy_response["objects"]
+            stat_all_languages_sj[lang]["vacancies_found"] = vacancy_response["total"]
             for vacancy in vacancy_page:
                 predict = predict_rub_salary_sj(vacancy)
                 if predict:
@@ -114,10 +114,12 @@ def get_stats_vacancies_hh(languages):
         } for lang in languages
     }
     for lang in languages:
-        vacancies = get_hh_vacancies_by_language(lang)
-        stat_all_languages_hh[lang]["vacancies_found"] = vacancies["found"]
+        # vacancies = get_hh_vacancies_by_language(lang)
+        # stat_all_languages_hh[lang]["vacancies_found"] = vacancies["found"]
         proceded_vacancies = []
-        for vacancy in get_all_vacancies_hh(lang):
+        vacancies, vacancies_count = get_all_vacancies_hh(lang)
+        stat_all_languages_hh[lang]["vacancies_found"] = vacancies_count
+        for vacancy in vacancies:
             predict = predict_rub_salary_hh(vacancy)
             if predict:
                 proceded_vacancies.append(predict)
